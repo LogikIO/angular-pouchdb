@@ -4,6 +4,8 @@ var self = this;
 
 describe('Angular-aware PouchDB public API', function() {
   var db;
+  var $rootScope;
+  var $window;
 
   function shouldBeOK(response) {
     expect(response.ok).toBe(true);
@@ -33,15 +35,18 @@ describe('Angular-aware PouchDB public API', function() {
     inject(put);
   }
 
-  beforeEach(function() {
-    var $injector = angular.injector(['ng', 'pouchdb']);
-    var pouchDB = $injector.get('pouchDB');
+  beforeEach(module('pouchdb'));
+  beforeEach(inject(function(pouchDB, _$rootScope_, _$window_) {
     db = pouchDB('db');
-  });
+    $rootScope = _$rootScope_;
+    $window = _$window_;
+  }));
 
-  it('should wrap destroy', function(done) {
+  fit('should wrap destroy', function(done) {
+    var interval = $window.setInterval($rootScope.$digest.bind());
     db.destroy()
       .then(shouldBeOK)
+      .then($window.clearInterval.bind(null, interval))
       .catch(shouldNotBeCalled)
       .finally(done);
   });
